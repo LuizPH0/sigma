@@ -1,0 +1,1774 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AQUA Pernambuco &bull; Controle de Materiais SIGMA</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- SheetJS para exportar arquivos Excel (.xlsx) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- Supabase JS Client v2 Oficial -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            aqua: {
+              main: '#1C366B',
+              dark: '#002060',
+              mid: '#0070C0',
+              light: '#00B0F0',
+              pale: '#EAF2FB',
+              hover: '#152952',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #EAF2FB; }
+    ::-webkit-scrollbar-thumb { background: #0070C0; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #002060; }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col antialiased selection:bg-[#0070C0] selection:text-white">
+
+  <!-- ========================================== -->
+  <!-- 0. TELA DE LOGIN SUPABASE AUTH COM ROLES  -->
+  <!-- ========================================== -->
+  <div id="view-login" class="fixed inset-0 z-50 bg-[#002060] flex items-center justify-center p-4 bg-gradient-to-br from-[#1C366B] via-[#002060] to-slate-950">
+    <div class="bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-white/20 p-8 space-y-6">
+      
+      <div class="text-center space-y-3">
+        <div class="inline-flex bg-white px-4 py-2 rounded-2xl shadow-sm border border-slate-200">
+          <svg class="h-10 w-auto" viewBox="0 0 460 215" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M48 135 L74 65 L100 135" stroke="#1C366B" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+            <ellipse cx="180" cy="100" rx="36" ry="34" stroke="#1C366B" stroke-width="11" fill="none"/>
+            <path d="M192 124 C198 134 216 138 226 132" stroke="#1C366B" stroke-width="11" stroke-linecap="round"/>
+            <path d="M260 65 L260 112 C260 128 274 136 290 136 C306 136 320 128 320 112 L320 65" stroke="#1C366B" stroke-width="11" stroke-linecap="round"/>
+            <path d="M358 135 L384 65 L410 135" stroke="#1C366B" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="230" y="162" text-anchor="middle" font-family="'Inter', sans-serif" font-size="15" font-weight="700" letter-spacing="6" fill="#1C366B">PERNAMBUCO</text>
+            <g transform="translate(48, 178)">
+              <text x="0" y="24" font-family="'Inter', sans-serif" font-size="28" font-weight="900" fill="#0070C0" letter-spacing="0.5">BRK</text>
+              <path d="M37 20 C37 17 40 14 43 14 C46 14 49 17 49 20 C49 23 46 26 43 26 C40 26 37 23 37 20 Z" fill="#00B0F0"/>
+            </g>
+            <g transform="translate(330, 182)">
+              <path d="M12 2 C7 2 2 8 2 15 C2 21 6 25 10 27 L9 32 L13 32 L14 26 C17 24 20 20 20 15 C20 8 16 2 12 2 Z" fill="#E11D48"/>
+              <text x="24" y="20" font-family="'Inter', sans-serif" font-size="20" font-weight="700" fill="#002060">acciona</text>
+            </g>
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-xl font-extrabold text-[#002060]">SIGMA</h2>
+          <p class="text-xs text-slate-500 font-medium">Controle de Materiais &bull; Supabase Database</p>
+        </div>
+      </div>
+
+      <!-- Formulário de Autenticação -->
+      <form onsubmit="executarLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-[#002060] mb-1">E-mail Institucional</label>
+          <input type="email" id="login-email" required placeholder="admin@aquapernambuco.com.br" class="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#0070C0] bg-white text-slate-800 font-medium">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-[#002060] mb-1">Senha de Acesso</label>
+          <input type="password" id="login-senha" required placeholder="Digite sua senha..." class="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#0070C0] bg-white text-slate-800">
+        </div>
+
+        <div id="login-erro-msg" class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold leading-relaxed">
+          Credenciais inválidas. Verifique os dados digitados.
+        </div>
+
+        <button type="submit" id="btn-login-submit" class="w-full py-3 px-4 rounded-xl font-bold text-xs uppercase tracking-wider text-white bg-[#0070C0] hover:bg-[#1C366B] transition shadow-md flex items-center justify-center gap-2 active:scale-95">
+          <i data-lucide="log-in" class="w-4 h-4"></i> Entrar no Sistema
+        </button>
+      </form>
+
+      <div class="pt-4 border-t border-slate-100 text-center">
+        <span class="text-[11px] text-slate-400 font-medium">Autenticação Segura via Supabase Auth (RLS Ativo)</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- CABEÇALHO PRINCIPAL INSTITUCIONAL          -->
+  <!-- ========================================== -->
+  <header class="bg-[#1C366B] text-white border-b border-[#002060] sticky top-0 z-30 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
+        
+        <div class="flex items-center space-x-4">
+          <div class="bg-white px-3.5 py-1.5 rounded-xl shadow-inner flex items-center justify-center border border-slate-200">
+            <svg class="h-9 w-auto" viewBox="0 0 460 215" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M48 135 L74 65 L100 135" stroke="#1C366B" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+              <ellipse cx="180" cy="100" rx="36" ry="34" stroke="#1C366B" stroke-width="11" fill="none"/>
+              <path d="M192 124 C198 134 216 138 226 132" stroke="#1C366B" stroke-width="11" stroke-linecap="round"/>
+              <path d="M260 65 L260 112 C260 128 274 136 290 136 C306 136 320 128 320 112 L320 65" stroke="#1C366B" stroke-width="11" stroke-linecap="round"/>
+              <path d="M358 135 L384 65 L410 135" stroke="#1C366B" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+              <text x="230" y="162" text-anchor="middle" font-family="'Inter', sans-serif" font-size="15" font-weight="700" letter-spacing="6" fill="#1C366B">PERNAMBUCO</text>
+              <g transform="translate(48, 178)">
+                <text x="0" y="24" font-family="'Inter', sans-serif" font-size="28" font-weight="900" fill="#0070C0" letter-spacing="0.5">BRK</text>
+                <path d="M37 20 C37 17 40 14 43 14 C46 14 49 17 49 20 C49 23 46 26 43 26 C40 26 37 23 37 20 Z" fill="#00B0F0"/>
+              </g>
+              <g transform="translate(330, 182)">
+                <path d="M12 2 C7 2 2 8 2 15 C2 21 6 25 10 27 L9 32 L13 32 L14 26 C17 24 20 20 20 15 C20 8 16 2 12 2 Z" fill="#E11D48"/>
+                <text x="24" y="20" font-family="'Inter', sans-serif" font-size="20" font-weight="700" fill="#002060">acciona</text>
+              </g>
+            </svg>
+          </div>
+
+          <div class="hidden sm:block">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-extrabold tracking-tight text-white uppercase">Gestão de Materiais SIGMA</span>
+              <span class="text-[10px] bg-[#00B0F0] text-[#002060] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">RMR Norte</span>
+            </div>
+            <p class="text-xs text-[#EAF2FB]/80">Supabase Relational Database &bull; PostgreSQL</p>
+          </div>
+        </div>
+
+        <!-- Menu de Navegação -->
+        <nav class="flex items-center space-x-1 sm:space-x-2">
+          <button onclick="switchTab('dashboard')" id="nav-dashboard" class="tab-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 text-white bg-[#0070C0] shadow-sm">
+            <i data-lucide="layout-grid" class="w-4 h-4"></i>
+            <span class="hidden md:inline">Dashboard</span>
+          </button>
+
+          <button onclick="switchTab('polos')" id="nav-polos" class="tab-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition-all flex items-center gap-1.5 text-[#EAF2FB] hover:text-white hover:bg-white/10">
+            <i data-lucide="map-pin" class="w-4 h-4 text-[#00B0F0]"></i>
+            <span class="hidden md:inline">Painel por Polo</span>
+          </button>
+
+          <button onclick="switchTab('estoque')" id="nav-estoque" class="tab-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition-all flex items-center gap-1.5 text-[#EAF2FB] hover:text-white hover:bg-white/10">
+            <i data-lucide="boxes" class="w-4 h-4"></i>
+            <span class="hidden md:inline">Estoque Geral</span>
+          </button>
+
+          <!-- Oculto para solicitantes externos -->
+          <button onclick="switchTab('alertas')" id="nav-alertas" class="tab-btn relative px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition-all flex items-center gap-1.5 text-[#EAF2FB] hover:text-white hover:bg-white/10">
+            <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-300"></i>
+            <span class="hidden md:inline">Alertas de Reposição</span>
+            <span id="badge-alertas-nav" class="hidden absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full animate-pulse">0</span>
+          </button>
+
+          <button onclick="switchTab('historico')" id="nav-historico" class="tab-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition-all flex items-center gap-1.5 text-[#EAF2FB] hover:text-white hover:bg-white/10">
+            <i data-lucide="history" class="w-4 h-4"></i>
+            <span class="hidden md:inline">Movimentações</span>
+          </button>
+        </nav>
+
+        <!-- Informações do Usuário Conectado & Logout -->
+        <div class="flex items-center gap-3">
+          <div class="hidden lg:flex flex-col text-right">
+            <span id="sessao-usuario-nome" class="text-xs font-bold text-white truncate max-w-[170px]">Conectando...</span>
+            <span id="sessao-usuario-cargo" class="text-[10px] text-[#00B0F0] font-semibold">Perfil</span>
+          </div>
+
+          <button onclick="executarLogout()" title="Sair do Sistema" class="p-2 rounded-xl bg-white/10 hover:bg-rose-600 text-white transition flex items-center gap-1 text-xs font-bold">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">Sair</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================== -->
+  <!-- BARRA DE OPERAÇÕES DO SISTEMA              -->
+  <!-- ========================================== -->
+  <div class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+    <div class="bg-white border border-[#EAF2FB] rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-[#EAF2FB] text-[#0070C0] flex items-center justify-center font-bold">
+          <i data-lucide="database" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h4 class="text-xs sm:text-sm font-bold text-[#002060] flex items-center gap-2">
+            Módulo de Controle &bull; Supabase Database
+            <span id="badge-perfil-ativo" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#EAF2FB] text-[#002060] border border-[#0070C0]/30">Carregando</span>
+          </h4>
+          <p class="text-xs text-slate-500" id="resumo-dados-catalogo">Catálogo relacional (1.020 itens) com baixa transacional e controle por Polo</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 w-full sm:w-auto">
+        <!-- Botão Retirar (Abre o Checkout) -->
+        <button onclick="abrirModalCheckoutRetirada()" id="btn-abrir-checkout" class="relative bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm transition flex items-center gap-1.5 active:scale-95">
+          <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+          <span>Retirar</span>
+          <span id="badge-carrinho-topo" class="bg-white text-emerald-700 text-[10px] font-extrabold px-1.5 py-0.2 rounded-full ml-1">0</span>
+        </button>
+
+        <!-- Sincronização e Atualização em tempo real -->
+        <button onclick="carregarDadosSupabase()" title="Recarregar Dados do Supabase" class="text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 flex items-center justify-center gap-1.5 transition">
+          <i data-lucide="refresh-cw" class="w-4 h-4 text-[#0070C0]"></i> Recarregar
+        </button>
+
+        <!-- Exportação de Dados para Excel (Exclusivo Administrador) -->
+        <button onclick="exportarDadosParaExcelAdmin()" id="btn-exportar-excel-admin" class="text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 hidden items-center justify-center gap-1.5 transition">
+          <i data-lucide="download" class="w-4 h-4 text-[#0070C0]"></i> Exportar Base (.xlsx)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+
+    <!-- 1. ABA: DASHBOARD -->
+    <section id="tab-dashboard" class="tab-content space-y-6">
+      
+      <!-- Cards de Métricas -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-[11px] uppercase font-bold tracking-wider text-slate-400">Total de Materiais</p>
+            <h3 id="stat-total-codigos" class="text-3xl font-extrabold text-[#002060] mt-1">0</h3>
+            <p class="text-xs text-slate-500 mt-1">Itens mestre no catálogo</p>
+          </div>
+          <div class="w-12 h-12 rounded-xl bg-[#EAF2FB] text-[#002060] flex items-center justify-center">
+            <i data-lucide="package" class="w-6 h-6"></i>
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-[11px] uppercase font-bold tracking-wider text-slate-400">Estoque Físico Total</p>
+            <h3 id="stat-volume-total" class="text-3xl font-extrabold text-[#0070C0] mt-1">0</h3>
+            <p class="text-xs text-slate-500 mt-1">Saldo atual nos 4 polos</p>
+          </div>
+          <div class="w-12 h-12 rounded-xl bg-[#EAF2FB] text-[#0070C0] flex items-center justify-center">
+            <i data-lucide="boxes" class="w-6 h-6"></i>
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-[11px] uppercase font-bold tracking-wider text-slate-400">Itens no Carrinho</p>
+            <h3 id="stat-carrinho" class="text-3xl font-extrabold text-emerald-600 mt-1">0</h3>
+            <p class="text-xs text-emerald-700 mt-1 font-medium">Prontos para checkout</p>
+          </div>
+          <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <i data-lucide="shopping-cart" class="w-6 h-6"></i>
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-[11px] uppercase font-bold tracking-wider text-slate-400">Alertas de Reposição</p>
+            <h3 id="stat-zerados" class="text-3xl font-extrabold text-rose-600 mt-1">0</h3>
+            <p class="text-xs text-rose-600/80 mt-1">Situação Crítica ou Alerta</p>
+          </div>
+          <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+            <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Fila de Atendimento e Painel de Operações Rápidas -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-sm flex flex-col overflow-hidden">
+          <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-[#EAF2FB]/40">
+            <div>
+              <h4 class="font-bold text-[#002060] text-sm sm:text-base flex items-center gap-2">
+                <i data-lucide="clock" class="w-4 h-4 text-[#0070C0]"></i> Últimas Movimentações Registradas
+              </h4>
+              <p class="text-xs text-slate-500">Histórico de saídas, entradas e retiradas diretas no Supabase</p>
+            </div>
+            <button onclick="switchTab('historico')" class="text-xs font-bold text-[#0070C0] hover:text-[#002060] flex items-center gap-1">
+              Ver todas <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+
+          <div id="dashboard-fila-atendimento" class="p-4 space-y-3 flex-1 overflow-y-auto max-h-96">
+            <!-- Gerado via JS -->
+          </div>
+        </div>
+
+        <div class="bg-gradient-to-br from-[#1C366B] to-[#002060] text-white rounded-2xl p-6 shadow-md flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-[#0070C0]/60 text-white border border-[#00B0F0]/40">
+                Operações de Campo
+              </span>
+              <i data-lucide="shield-check" class="w-5 h-5 text-[#00B0F0]"></i>
+            </div>
+
+            <h3 class="text-lg font-bold mb-1">Acesso Direto</h3>
+            <p class="text-xs text-[#EAF2FB]/80 mb-6 leading-relaxed">
+              Consulte o catálogo mestre de 1.020 SKUs, adicione materiais à lista e confirme a retirada imediata no almoxarifado.
+            </p>
+
+            <div class="space-y-3">
+              <button onclick="switchTab('polos')" class="w-full py-2.5 px-4 rounded-xl bg-white text-[#002060] font-bold text-xs sm:text-sm hover:bg-[#EAF2FB] transition flex items-center justify-center gap-2 shadow-sm">
+                <i data-lucide="map-pin" class="w-4 h-4 text-[#0070C0]"></i> Painel por Polo
+              </button>
+
+              <button onclick="switchTab('estoque')" class="w-full py-2.5 px-4 rounded-xl bg-[#0070C0] hover:bg-[#00B0F0] hover:text-[#002060] text-white font-bold text-xs sm:text-sm transition flex items-center justify-center gap-2 shadow-sm">
+                <i data-lucide="boxes" class="w-4 h-4"></i> Consultar Estoque Geral
+              </button>
+
+              <button onclick="abrirModalCheckoutRetirada()" class="w-full py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-xs sm:text-sm transition flex items-center justify-center gap-2 shadow-sm">
+                <i data-lucide="check-circle" class="w-4 h-4"></i> Checkout de Retirada
+              </button>
+            </div>
+          </div>
+
+          <div class="mt-6 pt-4 border-t border-white/10 text-[11px] text-[#EAF2FB]/80 flex items-center justify-between">
+            <span class="flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Supabase Conectado
+            </span>
+            <span class="font-mono text-[10px]">PostgreSQL 3FN</span>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- 2. ABA: PAINEL POR POLO -->
+    <section id="tab-polos" class="tab-content hidden space-y-5">
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <h3 class="text-base font-bold text-[#002060] flex items-center gap-2">
+            <i data-lucide="map-pin" class="w-5 h-5 text-[#0070C0]"></i> Painel de Estoque por Polo
+          </h3>
+          <p class="text-xs text-slate-500">Demanda mensal estimada (30d), estoque mínimo, saldo físico e retiradas diretas</p>
+        </div>
+
+        <div id="abas-polos-container" class="flex flex-wrap items-center gap-1.5 p-1 bg-slate-100 rounded-xl">
+          <!-- Populado via JS -->
+        </div>
+      </div>
+
+      <!-- Resumo do Polo Selecionado -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div>
+            <span class="text-[10px] font-bold text-slate-400 uppercase">Previsão 30 Dias</span>
+            <h4 id="polo-stat-previsao" class="text-2xl font-extrabold text-[#002060] mt-0.5">0</h4>
+            <span class="text-xs text-slate-500">Demanda mensal estimada</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-[#EAF2FB] text-[#0070C0] flex items-center justify-center font-bold">
+            <i data-lucide="calendar" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div>
+            <span class="text-[10px] font-bold text-slate-400 uppercase">Estoque Atual Físico</span>
+            <h4 id="polo-stat-atual" class="text-2xl font-extrabold text-[#0070C0] mt-0.5">0</h4>
+            <span class="text-xs text-slate-500" id="polo-stat-chegou-sub">Inicial: 0</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-[#EAF2FB] text-[#0070C0] flex items-center justify-center font-bold">
+            <i data-lucide="boxes" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div>
+            <span class="text-[10px] font-bold text-amber-600 uppercase">Em Alerta (30% a 50%)</span>
+            <h4 id="polo-stat-atencao" class="text-2xl font-extrabold text-amber-600 mt-0.5">0</h4>
+            <span class="text-xs text-slate-500">Próximos do limite</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+            <i data-lucide="alert-circle" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div>
+            <span class="text-[10px] font-bold text-rose-600 uppercase">Críticos (&lt; 30%)</span>
+            <h4 id="polo-stat-alerta" class="text-2xl font-extrabold text-rose-600 mt-0.5">0</h4>
+            <span class="text-xs text-slate-500">Abaixo de 30% do teto</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold">
+            <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabela do Polo -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+        <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div class="relative w-full sm:w-72">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
+            <input type="text" id="polo-filtro-busca" placeholder="Filtrar por SKU ou descrição..." oninput="renderTabelaPolo()" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#0070C0] bg-slate-50">
+          </div>
+
+          <div class="flex items-center gap-2">
+            <select id="polo-filtro-situacao" onchange="renderTabelaPolo()" class="py-1.5 px-3 text-xs rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#0070C0] text-slate-700">
+              <option value="">Todas as Classificações</option>
+              <option value="Regular">Regular 🟢</option>
+              <option value="Em alerta">Em alerta 🟡</option>
+              <option value="Crítico">Crítico 🔴</option>
+              <option value="Sob demanda">Sob demanda ⚫</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm text-slate-600">
+            <thead class="bg-[#EAF2FB] text-[#002060] uppercase font-bold text-xs tracking-wider border-b border-[#0070C0]/20">
+              <tr>
+                <th class="py-3.5 px-4 font-mono font-bold text-[#002060]">Código AQUA (SKU)</th>
+                <th class="py-3.5 px-4">Material / Descrição</th>
+                <th class="py-3.5 px-4 text-center">Unidade</th>
+                <th class="py-3.5 px-4 text-center">Necessário 1 Mês</th>
+                <th class="py-3.5 px-4 text-center">Estoque Mínimo</th>
+                <th class="py-3.5 px-4 text-center">Inicial (Chegou)</th>
+                <th class="py-3.5 px-4 text-right">Saldo Atual</th>
+                <th class="py-3.5 px-4 text-center">Classificação</th>
+                <th class="py-3.5 px-4 text-center">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-polo-body" class="divide-y divide-slate-100">
+              <!-- Renderizado via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. ABA: ESTOQUE GERAL (CONSOLIDADO) -->
+    <section id="tab-estoque" class="tab-content hidden space-y-4">
+      
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+        
+        <div class="flex-1 flex flex-col sm:flex-row items-center gap-3">
+          <div class="relative w-full sm:w-80">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3"></i>
+            <input type="text" id="filtro-busca" placeholder="Buscar por Código AQUA ou Descrição..." oninput="renderTabelaEstoque()" class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#0070C0] bg-slate-50/50">
+          </div>
+
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <select id="filtro-polo-estoque" onchange="renderTabelaEstoque()" class="w-full sm:w-auto py-2 px-3 text-sm rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#0070C0] text-slate-700">
+              <option value="">Todos os Polos</option>
+              <option value="Carpina">Carpina</option>
+              <option value="Goiana">Goiana</option>
+              <option value="Olinda">Olinda</option>
+              <option value="Paulista">Paulista</option>
+            </select>
+          </div>
+
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <select id="filtro-status-estoque" onchange="renderTabelaEstoque()" class="w-full sm:w-auto py-2 px-3 text-sm rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#0070C0] text-slate-700">
+              <option value="">Todos os Saldos</option>
+              <option value="DISPONIVEL">Disponível (> 0)</option>
+              <option value="ZERADO">Zerados (= 0)</option>
+              <option value="BAIXO">Estoque Baixo (&le; Mínimo)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button onclick="abrirModalCheckoutRetirada()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 shadow-sm transition">
+            <i data-lucide="shopping-cart" class="w-4 h-4"></i> Finalizar Retirada
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Tabela Consolidada -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm text-slate-600">
+            <thead class="bg-[#EAF2FB] text-[#002060] uppercase font-bold text-xs tracking-wider border-b border-[#0070C0]/20">
+              <tr>
+                <th class="py-3.5 px-4 font-mono font-bold text-[#002060]">Código AQUA (SKU)</th>
+                <th class="py-3.5 px-4">Nome do Material / Descrição</th>
+                <th class="py-3.5 px-4">Polo</th>
+                <th class="py-3.5 px-4 text-center">Unidade</th>
+                <th class="py-3.5 px-4 text-center">Estoque Mínimo</th>
+                <th class="py-3.5 px-4 text-right">Saldo Físico</th>
+                <th class="py-3.5 px-4 text-center">Classificação</th>
+                <th class="py-3.5 px-4 text-center">Ações de Retirada</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-estoque-body" class="divide-y divide-slate-100">
+              <!-- Renderizado via JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Barra de Paginação -->
+        <div class="p-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50/50">
+          <span id="tabela-contador-itens" class="text-xs text-slate-500">Exibindo registros...</span>
+          <div class="flex items-center gap-2">
+            <button id="btn-pag-ant" onclick="mudarPagina(-1)" class="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold hover:bg-white transition disabled:opacity-40">Anterior</button>
+            <span id="info-pagina" class="text-xs font-bold text-[#002060]">Pág 1 de 1</span>
+            <button id="btn-pag-prox" onclick="mudarPagina(1)" class="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold hover:bg-white transition disabled:opacity-40">Próxima</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. ABA: ALERTAS DE REPOSIÇÃO (EXCLUSIVA ADMIN / VALIDADOR) -->
+    <section id="tab-alertas" class="tab-content hidden space-y-4">
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div>
+          <h3 class="text-base font-bold text-rose-700 flex items-center gap-2">
+            <i data-lucide="alert-triangle" class="w-5 h-5 text-rose-600"></i> Painel de Alertas de Reposição
+          </h3>
+          <p class="text-xs text-slate-500">Classificação percentual baseada no estoque máximo e demanda mensal</p>
+        </div>
+
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <input type="text" id="filtro-busca-alertas" placeholder="Buscar no alerta..." oninput="renderTabelaAlertas()" class="px-3 py-1.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#0070C0]">
+          <select id="filtro-classificacao-alertas" onchange="renderTabelaAlertas()" class="py-1.5 px-3 text-xs rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#0070C0] text-slate-700">
+            <option value="">Todas as Situações</option>
+            <option value="Crítico">Crítico (&lt; 30%)</option>
+            <option value="Em alerta">Em alerta (30% a 50%)</option>
+            <option value="Sob demanda">Sob demanda</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm text-slate-600">
+            <thead class="bg-rose-50/70 text-[#002060] uppercase font-bold text-xs tracking-wider border-b border-rose-200">
+              <tr>
+                <th class="py-3 px-4 font-mono font-bold">Código SKU</th>
+                <th class="py-3 px-4">Material / Descrição</th>
+                <th class="py-3 px-4">Polo</th>
+                <th class="py-3 px-4 text-center">Unidade</th>
+                <th class="py-3 px-4 text-center">Saldo Físico</th>
+                <th class="py-3 px-4 text-center">Estoque Mínimo</th>
+                <th class="py-3 px-4 text-center">Estoque Máximo</th>
+                <th class="py-3 px-4 text-right">Reposição Sugerida</th>
+                <th class="py-3 px-4 text-center">Classificação</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-alertas-body" class="divide-y divide-slate-100">
+              <!-- Renderizado via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. ABA: MOVIMENTAÇÕES (AUDITORIA / HISTÓRICO RLS) -->
+    <section id="tab-historico" class="tab-content hidden space-y-4">
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div>
+          <h3 class="text-base font-bold text-[#002060] flex items-center gap-2">
+            <i data-lucide="history" class="w-5 h-5 text-[#0070C0]"></i> Histórico Oficial de Movimentações
+          </h3>
+          <p class="text-xs text-slate-500">Auditoria de retiradas e entradas gravadas de forma atômica no Supabase</p>
+        </div>
+
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <input type="text" id="filtro-busca-historico" placeholder="Buscar por código, equipe ou OS..." oninput="renderHistorico()" class="px-3 py-1.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#0070C0]">
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm text-slate-600">
+            <thead class="bg-[#EAF2FB] text-[#002060] uppercase font-bold text-xs tracking-wider border-b border-[#0070C0]/20">
+              <tr>
+                <th class="py-3 px-4 font-mono font-bold">Transação</th>
+                <th class="py-3 px-4 font-mono">Data/Hora</th>
+                <th class="py-3 px-4">Polo</th>
+                <th class="py-3 px-4">Ação</th>
+                <th class="py-3 px-4 font-mono">Código AQUA</th>
+                <th class="py-3 px-4">Descrição</th>
+                <th class="py-3 px-4 text-center">Qtd</th>
+                <th class="py-3 px-4 text-center">Saldo Resultante</th>
+                <th class="py-3 px-4">Solicitante / Equipe</th>
+                <th class="py-3 px-4">Motivo / O.S.</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-historico-body" class="divide-y divide-slate-100">
+              <!-- Renderizado via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- MODAL: CHECKOUT DE RETIRADA DIRETA         -->
+  <!-- ========================================== -->
+  <div id="modal-checkout-retirada" class="fixed inset-0 bg-[#002060]/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[92vh] flex flex-col overflow-hidden shadow-2xl border border-slate-100">
+      <div class="bg-[#1C366B] text-white p-5 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-emerald-500 flex items-center justify-center text-white shadow-md">
+            <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-base">Checkout de Retirada de Materiais</h3>
+            <p class="text-xs text-[#EAF2FB]/80">Confirme as quantidades e dados da equipe beneficiária</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modal-checkout-retirada')" class="text-slate-300 hover:text-white transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form onsubmit="confirmarRetiradaDiretaCheckout(event)" class="p-6 overflow-y-auto space-y-5">
+        
+        <!-- Identificação -->
+        <div class="bg-[#EAF2FB]/50 p-4 rounded-2xl border border-[#0070C0]/20 space-y-3">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-[#002060] flex items-center gap-1.5">
+            <i data-lucide="users" class="w-3.5 h-3.5 text-[#0070C0]"></i> Dados do Solicitante e Equipe de Campo
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Nome do Solicitante *</label>
+              <input type="text" id="checkout-nome-solicitante" required readonly class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#0070C0] bg-slate-100 font-bold text-[#002060]">
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Equipe que Receberá o Material *</label>
+              <select id="checkout-equipe-destino" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#0070C0] bg-white font-semibold text-[#002060]">
+                <option value="Equipe Manutenção de Redes">Equipe Manutenção de Redes</option>
+                <option value="Equipe Ligações Novas">Equipe Ligações Novas</option>
+                <option value="Equipe Obras Civis / Recomposição">Equipe Obras Civis / Recomposição</option>
+                <option value="Equipe Hidrometria">Equipe Hidrometria</option>
+                <option value="Equipe Eletromecânica">Equipe Eletromecânica</option>
+                <option value="Equipe Plantão / Emergência">Equipe Plantão / Emergência</option>
+              </select>
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Número da O.S. / Ordem de Serviço</label>
+              <input type="text" id="checkout-os" placeholder="Ex: OS 2026-884" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#0070C0] bg-white">
+            </div>
+          </div>
+        </div>
+
+        <!-- Itens do Pedido de Retirada -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-[#002060] flex items-center gap-1.5">
+              <i data-lucide="list-checks" class="w-4 h-4 text-[#0070C0]"></i> Itens da Retirada (<span id="checkout-contador-itens">0</span>)
+            </h4>
+            <span class="text-[11px] text-slate-400">Verifique os limites físicos antes de confirmar</span>
+          </div>
+
+          <div id="checkout-lista-itens-container" class="space-y-2 max-h-56 overflow-y-auto border border-slate-200 rounded-2xl p-2 bg-slate-50/50">
+            <!-- Renderizado via JS -->
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Finalidade da Aplicação / Justificativa *</label>
+          <textarea id="checkout-motivo" rows="2" required placeholder="Descreva onde os materiais serão aplicados..." class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#0070C0] bg-white"></textarea>
+        </div>
+
+        <div class="pt-3 flex items-center justify-end gap-3 border-t border-slate-100">
+          <button type="button" onclick="closeModal('modal-checkout-retirada')" class="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition">Cancelar</button>
+          <button type="submit" id="btn-confirmar-retirada" class="px-5 py-2.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-md transition flex items-center gap-2">
+            <i data-lucide="check" class="w-4 h-4"></i> Confirmar Retirada Imediata
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- NOTIFICAÇÃO TOAST -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-3 px-4 py-3 rounded-2xl shadow-2xl text-sm font-medium border text-white max-w-md">
+    <i id="toast-icon" data-lucide="info" class="w-5 h-5 shrink-0"></i>
+    <span id="toast-msg">Mensagem do sistema</span>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- JAVASCRIPT: SUPABASE CLIENT & LÓGICA INTEGRADA                            -->
+  <!-- ========================================================================= -->
+  <script>
+    // 1. CONFIGURAÇÃO OFICIAL DO SUPABASE COM A CHAVE ANON JWT
+    const SUPABASE_URL = 'https://bongadwpcsetyueyxqyd.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJvbmdhZHdwY3NldHl1ZXl4cXlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM5NTc0OTEsImV4cCI6MjEwOTUzMzQ5MX0._NcDKTgAfnqYuTYG8ZG38quOZM896RcfN_ou8HSR6QQ';
+
+    // Evita conflito com o identificador global da biblioteca Supabase
+    const supabaseClient = (window.supabase && window.supabase.createClient)
+      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+          auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+          }
+        })
+      : null;
+
+    const POLOS_SISTEMA = ['Carpina', 'Goiana', 'Olinda', 'Paulista'];
+    let poloAtivo = 'Carpina';
+
+    // Estados em memória da aplicação
+    let materiais = [];          // Lista de materiais combinados com estoque_por_polo
+    let historico = [];          // Movimentações registradas no Supabase
+    let polosDb = [];            // Registros da tabela public.polos
+    let perfilUsuario = null;    // Registro de public.profiles
+    let carrinhoItens = [];      // Lista de retirada corrente
+
+    let paginaAtual = 1;
+    const itensPorPagina = 15;
+
+    // Inicialização da Aplicação
+    window.onload = async function() {
+      await verificarSessaoSupabase();
+      lucide.createIcons();
+    };
+
+    // =========================================================================
+    // 2. AUTENTICAÇÃO E SESSÃO SUPABASE
+    // =========================================================================
+    async function verificarSessaoSupabase() {
+      try {
+        if (!supabaseClient) {
+          console.error('Cliente Supabase não inicializado.');
+          abrirTelaLogin();
+          return;
+        }
+
+        const { data: { session }, error } = await supabaseClient.auth.getSession();
+        
+        if (session && session.user) {
+          await carregarPerfilUsuario(session.user);
+          document.getElementById('view-login').classList.add('hidden');
+          await carregarDadosSupabase();
+        } else {
+          abrirTelaLogin();
+        }
+      } catch (e) {
+        console.error('Erro ao verificar sessão:', e);
+        abrirTelaLogin();
+      }
+    }
+
+    function abrirTelaLogin() {
+      const viewLogin = document.getElementById('view-login');
+      if (viewLogin) viewLogin.classList.remove('hidden');
+      
+      const emailInput = document.getElementById('login-email');
+      const senhaInput = document.getElementById('login-senha');
+      if (emailInput) emailInput.value = '';
+      if (senhaInput) senhaInput.value = '';
+    }
+
+    async function executarLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-senha').value.trim();
+      const erroEl = document.getElementById('login-erro-msg');
+      const btnSubmit = document.getElementById('btn-login-submit');
+
+      btnSubmit.disabled = true;
+      btnSubmit.innerText = 'Autenticando...';
+      if (erroEl) erroEl.classList.add('hidden');
+
+      try {
+        if (!supabaseClient) throw new Error('Cliente Supabase indisponível.');
+
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+          email: email,
+          password: password
+        });
+
+        if (error) throw error;
+
+        await carregarPerfilUsuario(data.user);
+        document.getElementById('view-login').classList.add('hidden');
+        showToast(`Bem-vindo, ${perfilUsuario.nome}!`, 'success');
+        await carregarDadosSupabase();
+      } catch (err) {
+        console.error('Erro de autenticação:', err);
+        if (erroEl) {
+          erroEl.innerText = err.message || 'Credenciais inválidas. Verifique os dados digitados.';
+          erroEl.classList.remove('hidden');
+        }
+      } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = '<i data-lucide="log-in" class="w-4 h-4"></i> Entrar no Sistema';
+        lucide.createIcons();
+      }
+    }
+
+    async function carregarPerfilUsuario(user) {
+      const { data, error } = await supabaseClient
+        .from('profiles')
+        .select('*, polos(nome)')
+        .eq('id', user.id)
+        .single();
+
+      if (error || !data) {
+        perfilUsuario = {
+          id: user.id,
+          nome: user.user_metadata?.nome || user.email.split('@')[0],
+          email: user.email,
+          role: user.user_metadata?.role || 'SOLICITANTE',
+          polo_id: null
+        };
+      } else {
+        perfilUsuario = data;
+      }
+
+      aplicarPermissoesInterface();
+    }
+
+    function aplicarPermissoesInterface() {
+      if (!perfilUsuario) return;
+
+      const isAdmin = perfilUsuario.role === 'ADMIN';
+      const isValidador = perfilUsuario.role === 'VALIDADOR';
+      const isSolicitante = perfilUsuario.role === 'SOLICITANTE';
+
+      // Atualiza cabeçalho
+      const elNome = document.getElementById('sessao-usuario-nome');
+      const elCargo = document.getElementById('sessao-usuario-cargo');
+      const badgeAtivo = document.getElementById('badge-perfil-ativo');
+      const navAlertas = document.getElementById('nav-alertas');
+      const btnExportarAdmin = document.getElementById('btn-exportar-excel-admin');
+
+      if (elNome) elNome.innerText = perfilUsuario.nome;
+
+      let cargoTexto = 'Solicitante Externo';
+      if (isAdmin) cargoTexto = 'Administrador Geral';
+      else if (isValidador) cargoTexto = 'Validador Técnico';
+
+      if (elCargo) elCargo.innerText = cargoTexto;
+      if (badgeAtivo) badgeAtivo.innerText = cargoTexto;
+
+      // Restrição 1: Alertas de Reposição ocultos para solicitante externo
+      if (navAlertas) {
+        if (isSolicitante) {
+          navAlertas.classList.add('hidden');
+        } else {
+          navAlertas.classList.remove('hidden');
+        }
+      }
+
+      // Restrição 2: Exportação para Excel exclusiva do Administrador
+      if (btnExportarAdmin) {
+        if (isAdmin) {
+          btnExportarAdmin.classList.remove('hidden');
+          btnExportarAdmin.classList.add('flex');
+        } else {
+          btnExportarAdmin.classList.add('hidden');
+          btnExportarAdmin.classList.remove('flex');
+        }
+      }
+
+      // Atualiza nome no modal de checkout
+      const checkNome = document.getElementById('checkout-nome-solicitante');
+      if (checkNome) checkNome.value = perfilUsuario.nome;
+    }
+
+    async function executarLogout() {
+      try {
+        if (supabaseClient) {
+          await supabaseClient.auth.signOut();
+        }
+      } catch (e) {
+        console.warn('Erro ao deslogar no Supabase:', e);
+      }
+      perfilUsuario = null;
+      materiais = [];
+      historico = [];
+      carrinhoItens = [];
+      
+      // Limpa chaves de autenticação do localStorage
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('sb-') || key.includes('supabase'))) {
+          localStorage.removeItem(key);
+        }
+      }
+
+      abrirTelaLogin();
+      showToast('Sessão encerrada com sucesso.', 'info');
+    }
+
+    // =========================================================================
+    // 3. CARREGAMENTO DE DADOS RELACIONAIS (SUPABASE)
+    // =========================================================================
+    async function carregarDadosSupabase() {
+      try {
+        if (!supabaseClient) return;
+
+        // 1. Carrega Polos
+        const { data: polosData, error: errPolos } = await supabaseClient
+          .from('polos')
+          .select('*')
+          .order('nome');
+
+        if (errPolos) {
+          console.error('Erro ao consultar tabela polos:', errPolos);
+          throw new Error(`Falha na tabela polos: ${errPolos.message || errPolos.details || 'Verifique permissões RLS/Schema'}`);
+        }
+        polosDb = polosData || [];
+
+        // 2. Carrega Estoque por Polo com dados do Material
+        const { data: estoqueData, error: errEstoque } = await supabaseClient
+          .from('estoque_por_polo')
+          .select(`
+            id,
+            polo_id,
+            material_id,
+            previsao_30d,
+            tipo_regra_minimo,
+            estoque_minimo,
+            estoque_maximo,
+            saldo_inicial,
+            saldo_atual,
+            polos ( id, nome, sigla ),
+            materiais ( id, codigo_aqua, descricao, unidade, grupo )
+          `);
+
+        if (errEstoque) {
+          console.error('Erro ao consultar estoque_por_polo:', errEstoque);
+          throw new Error(`Falha no estoque: ${errEstoque.message || errEstoque.details || 'Database error querying schema'}`);
+        }
+
+        materiais = (estoqueData || []).map(row => {
+          const saldo = Number(row.saldo_atual) || 0;
+          const maximo = Number(row.estoque_maximo) || 0;
+          const minimo = Number(row.estoque_minimo) || 0;
+          const previsao = Number(row.previsao_30d) || 0;
+
+          // Regra de Classificação Oficial do SIGMA
+          let classificacao = 'Regular';
+          if (saldo === 0 && (maximo === 0 || previsao === 0)) {
+            classificacao = 'Sob demanda';
+          } else if (maximo > 0 && saldo < (maximo * 0.30)) {
+            classificacao = 'Crítico';
+          } else if (maximo > 0 && saldo < (maximo * 0.50)) {
+            classificacao = 'Em alerta';
+          } else {
+            classificacao = 'Regular';
+          }
+
+          return {
+            estoqueId: row.id,
+            poloId: row.polo_id,
+            poloNome: row.polos?.nome || 'Geral',
+            materialId: row.material_id,
+            codigoAqua: row.materiais?.codigo_aqua || '',
+            descricao: row.materiais?.descricao || '',
+            unidade: row.materiais?.unidade || 'UN',
+            grupo: row.materiais?.grupo || 'Geral',
+            previsao30d: previsao,
+            tipoRegraMinimo: row.tipo_regra_minimo,
+            estoqueMinimo: minimo,
+            estoqueMaximo: maximo,
+            saldoInicial: Number(row.saldo_inicial) || 0,
+            saldoAtual: saldo,
+            classificacao: classificacao
+          };
+        });
+
+        // 3. Carrega Movimentações (RLS filtra automaticamente caso seja Solicitante)
+        const { data: movData, error: errMov } = await supabaseClient
+          .from('movimentacoes')
+          .select(`
+            *,
+            polos ( nome ),
+            materiais ( codigo_aqua, descricao, unidade )
+          `)
+          .order('created_at', { ascending: false })
+          .limit(100);
+
+        if (errMov) {
+          console.warn('Aviso ao carregar movimentações:', errMov);
+        }
+        historico = movData || [];
+
+        // Atualiza a visualização
+        renderAbasPolos();
+        renderDashboard();
+        renderTabelaPolo();
+        renderTabelaEstoque();
+        renderTabelaAlertas();
+        renderHistorico();
+        atualizarContadoresCarrinho();
+
+      } catch (err) {
+        console.error('Erro ao consultar Supabase:', err);
+        showToast(err.message || 'Erro ao consultar banco de dados Supabase.', 'error');
+      }
+    }
+
+    // =========================================================================
+    // 4. CLASSIFICAÇÃO VISUAL DE SITUAÇÃO DO ESTOQUE
+    // =========================================================================
+    function obterEstiloClassificacao(classificacao) {
+      switch (classificacao) {
+        case 'Crítico':
+          return {
+            badge: 'bg-rose-100 text-rose-800 border-rose-300 font-extrabold',
+            icone: 'alert-triangle'
+          };
+        case 'Em alerta':
+          return {
+            badge: 'bg-amber-100 text-amber-800 border-amber-300 font-bold',
+            icone: 'alert-circle'
+          };
+        case 'Sob demanda':
+          return {
+            badge: 'bg-slate-200 text-slate-800 border-slate-300 font-semibold',
+            icone: 'slash'
+          };
+        default:
+          return {
+            badge: 'bg-emerald-100 text-emerald-800 border-emerald-200 font-medium',
+            icone: 'check-circle'
+          };
+      }
+    }
+
+    // =========================================================================
+    // 5. RENDERIZAÇÃO: PAINEL POR POLO
+    // =========================================================================
+    function renderAbasPolos() {
+      const container = document.getElementById('abas-polos-container');
+      if (!container) return;
+
+      container.innerHTML = POLOS_SISTEMA.map(polo => {
+        const ativo = polo === poloAtivo;
+        const totalPolo = materiais.filter(m => m.poloNome === polo).length;
+        return `
+          <button onclick="selecionarPolo('${polo}')" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${ativo ? 'bg-[#0070C0] text-white shadow-xs' : 'text-slate-600 hover:text-[#002060] hover:bg-white'}">
+            <i data-lucide="map-pin" class="w-3.5 h-3.5 ${ativo ? 'text-[#00B0F0]' : 'text-slate-400'}"></i>
+            ${polo} <span class="text-[10px] opacity-75">(${totalPolo})</span>
+          </button>
+        `;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    function selecionarPolo(polo) {
+      poloAtivo = polo;
+      renderAbasPolos();
+      renderTabelaPolo();
+    }
+
+    function renderTabelaPolo() {
+      const busca = (document.getElementById('polo-filtro-busca')?.value || '').trim().toLowerCase();
+      const filtroSit = document.getElementById('polo-filtro-situacao')?.value || '';
+
+      const itensPolo = materiais.filter(m => m.poloNome === poloAtivo);
+
+      let totalPrev = 0;
+      let totalAtual = 0;
+      let totalInicial = 0;
+      let countAlerta = 0;
+      let countCritico = 0;
+
+      const filtrados = itensPolo.filter(m => {
+        totalPrev += m.previsao30d;
+        totalAtual += m.saldoAtual;
+        totalInicial += m.saldoInicial;
+        if (m.classificacao === 'Em alerta') countAlerta++;
+        if (m.classificacao === 'Crítico') countCritico++;
+
+        const matchesBusca = m.codigoAqua.toLowerCase().includes(busca) || m.descricao.toLowerCase().includes(busca);
+        const matchesSit = !filtroSit || m.classificacao === filtroSit;
+        return matchesBusca && matchesSit;
+      });
+
+      // Atualiza cartões superiores do polo
+      const elPrev = document.getElementById('polo-stat-previsao');
+      const elAtual = document.getElementById('polo-stat-atual');
+      const elChegou = document.getElementById('polo-stat-chegou-sub');
+      const elAtencao = document.getElementById('polo-stat-atencao');
+      const elAlerta = document.getElementById('polo-stat-alerta');
+
+      if (elPrev) elPrev.innerText = totalPrev.toLocaleString('pt-BR');
+      if (elAtual) elAtual.innerText = totalAtual.toLocaleString('pt-BR');
+      if (elChegou) elChegou.innerText = `Inicial: ${totalInicial.toLocaleString('pt-BR')}`;
+      if (elAtencao) elAtencao.innerText = countAlerta;
+      if (elAlerta) elAlerta.innerText = countCritico;
+
+      const tbody = document.getElementById('tabela-polo-body');
+      if (!tbody) return;
+
+      if (filtrados.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="p-8 text-center text-slate-400">Nenhum material localizado no Polo ${poloAtivo}.</td></tr>`;
+      } else {
+        tbody.innerHTML = filtrados.slice(0, 150).map(item => {
+          const estilo = obterEstiloClassificacao(item.classificacao);
+          const itemCarrinho = carrinhoItens.find(c => c.estoqueId === item.estoqueId);
+          const qtdNoCarrinho = itemCarrinho ? itemCarrinho.quantidade : 0;
+
+          return `
+            <tr class="hover:bg-slate-50 transition text-xs sm:text-sm">
+              <td class="py-3 px-4 font-mono font-bold text-[#002060]">${item.codigoAqua}</td>
+              <td class="py-3 px-4">
+                <span class="font-bold text-slate-800 block">${item.descricao}</span>
+                <span class="text-[10px] text-slate-400 font-mono">Polo: ${item.poloNome} &bull; Grupo: ${item.grupo}</span>
+              </td>
+              <td class="py-3 px-4 text-center text-slate-500 font-semibold">${item.unidade}</td>
+              <td class="py-3 px-4 text-center font-bold text-[#002060] bg-slate-50/60">${item.previsao30d}</td>
+              <td class="py-3 px-4 text-center font-bold font-mono text-rose-700 bg-rose-50/40">${item.estoqueMinimo}</td>
+              <td class="py-3 px-4 text-center text-slate-600 font-medium">${item.saldoInicial}</td>
+              <td class="py-3 px-4 text-right">
+                <span class="font-extrabold text-sm sm:text-base ${item.saldoAtual <= item.estoqueMinimo && item.estoqueMinimo > 0 ? 'text-rose-600' : 'text-[#002060]'}">${item.saldoAtual}</span>
+                <span class="text-xs text-slate-400 ml-0.5">${item.unidade}</span>
+              </td>
+              <td class="py-3 px-4 text-center">
+                <span class="px-2.5 py-1 text-xs rounded-full border ${estilo.badge} inline-flex items-center gap-1">
+                  <i data-lucide="${estilo.icone}" class="w-3 h-3"></i> ${item.classificacao}
+                </span>
+              </td>
+              <td class="py-3 px-4 text-center">
+                <div class="flex items-center justify-center gap-1">
+                  <input type="number" id="input-qtd-${item.estoqueId}" min="1" max="${item.saldoAtual}" value="1" class="w-14 px-2 py-1 text-xs font-bold border border-slate-300 rounded-lg text-center" ${item.saldoAtual <= 0 ? 'disabled' : ''}>
+                  <button onclick="adicionarAoCarrinhoPolo('${item.estoqueId}')" ${item.saldoAtual <= 0 ? 'disabled' : ''} class="px-2.5 py-1 text-xs font-bold rounded-lg bg-[#0070C0] hover:bg-[#1C366B] text-white disabled:opacity-40 transition flex items-center gap-1">
+                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                    ${qtdNoCarrinho > 0 ? `(${qtdNoCarrinho})` : 'Lista'}
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      lucide.createIcons();
+    }
+
+    // =========================================================================
+    // 6. RENDERIZAÇÃO: ESTOQUE GERAL
+    // =========================================================================
+    function renderTabelaEstoque() {
+      const busca = (document.getElementById('filtro-busca')?.value || '').trim().toLowerCase();
+      const poloFiltro = document.getElementById('filtro-polo-estoque')?.value || '';
+      const statusFiltro = document.getElementById('filtro-status-estoque')?.value || '';
+
+      const filtrados = materiais.filter(item => {
+        const matchesBusca = item.codigoAqua.toLowerCase().includes(busca) || 
+                             item.descricao.toLowerCase().includes(busca) || 
+                             item.poloNome.toLowerCase().includes(busca);
+
+        let matchesPolo = true;
+        if (poloFiltro) matchesPolo = item.poloNome === poloFiltro;
+
+        let matchesStatus = true;
+        if (statusFiltro === 'DISPONIVEL') matchesStatus = item.saldoAtual > 0;
+        if (statusFiltro === 'ZERADO') matchesStatus = item.saldoAtual === 0;
+        if (statusFiltro === 'BAIXO') matchesStatus = item.saldoAtual <= item.estoqueMinimo && item.estoqueMinimo > 0;
+
+        return matchesBusca && matchesPolo && matchesStatus;
+      });
+
+      const totalPaginas = Math.ceil(filtrados.length / itensPorPagina) || 1;
+      if (paginaAtual > totalPaginas) paginaAtual = totalPaginas;
+      if (paginaAtual < 1) paginaAtual = 1;
+
+      const inicio = (paginaAtual - 1) * itensPorPagina;
+      const paginados = filtrados.slice(inicio, inicio + itensPorPagina);
+
+      const tbody = document.getElementById('tabela-estoque-body');
+      if (!tbody) return;
+
+      if (filtrados.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="p-8 text-center text-slate-400">Nenhum registro encontrado.</td></tr>';
+      } else {
+        tbody.innerHTML = paginados.map(item => {
+          const estilo = obterEstiloClassificacao(item.classificacao);
+          const itemCarrinho = carrinhoItens.find(c => c.estoqueId === item.estoqueId);
+          const qtdNoCarrinho = itemCarrinho ? itemCarrinho.quantidade : 0;
+
+          return `
+            <tr class="hover:bg-slate-50 transition">
+              <td class="py-3 px-4 font-mono font-bold text-xs text-[#002060]">${item.codigoAqua}</td>
+              <td class="py-3 px-4">
+                <span class="font-semibold text-slate-800 text-xs sm:text-sm block">${item.descricao}</span>
+                <span class="text-[10px] text-slate-400">Previsão: <strong>${item.previsao30d}</strong> &bull; Teto Máx: <strong>${item.estoqueMaximo}</strong></span>
+              </td>
+              <td class="py-3 px-4 text-xs font-bold text-[#0070C0]">${item.poloNome}</td>
+              <td class="py-3 px-4 text-center text-xs text-slate-500 font-semibold">${item.unidade}</td>
+              <td class="py-3 px-4 text-center font-bold font-mono text-rose-700 bg-rose-50/40">${item.estoqueMinimo}</td>
+              <td class="py-3 px-4 text-right">
+                <span class="font-extrabold text-sm sm:text-base ${item.saldoAtual <= item.estoqueMinimo && item.estoqueMinimo > 0 ? 'text-rose-600' : 'text-[#002060]'}">${item.saldoAtual}</span>
+                <span class="text-xs text-slate-400 ml-0.5">${item.unidade}</span>
+              </td>
+              <td class="py-3 px-4 text-center">
+                <span class="px-2.5 py-0.5 text-xs rounded-full border ${estilo.badge} inline-flex items-center gap-1">
+                  <i data-lucide="${estilo.icone}" class="w-3 h-3"></i> ${item.classificacao}
+                </span>
+              </td>
+              <td class="py-3 px-4 text-center">
+                <div class="flex items-center justify-center gap-1">
+                  <input type="number" id="input-geral-${item.estoqueId}" min="1" max="${item.saldoAtual}" value="1" class="w-14 px-2 py-1 text-xs font-bold border border-slate-300 rounded-lg text-center" ${item.saldoAtual <= 0 ? 'disabled' : ''}>
+                  <button onclick="adicionarAoCarrinhoGeral('${item.estoqueId}')" ${item.saldoAtual <= 0 ? 'disabled' : ''} class="px-2.5 py-1 text-xs font-bold rounded-lg bg-[#0070C0] hover:bg-[#1C366B] text-white disabled:opacity-40 transition flex items-center gap-1">
+                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                    ${qtdNoCarrinho > 0 ? `(${qtdNoCarrinho})` : 'Lista'}
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      // Atualiza paginação
+      const elCont = document.getElementById('tabela-contador-itens');
+      const elInfo = document.getElementById('info-pagina');
+      const elAnt = document.getElementById('btn-pag-ant');
+      const elProx = document.getElementById('btn-pag-prox');
+
+      if (elCont) elCont.innerText = `Exibindo ${filtrados.length} registros (Total: ${materiais.length})`;
+      if (elInfo) elInfo.innerText = `Pág ${paginaAtual} de ${totalPaginas}`;
+      if (elAnt) elAnt.disabled = paginaAtual <= 1;
+      if (elProx) elProx.disabled = paginaAtual >= totalPaginas;
+
+      lucide.createIcons();
+    }
+
+    function mudarPagina(delta) {
+      paginaAtual += delta;
+      renderTabelaEstoque();
+    }
+
+    // =========================================================================
+    // 7. RENDERIZAÇÃO: ALERTAS DE REPOSIÇÃO (ADMIN / VALIDADOR)
+    // =========================================================================
+    function renderTabelaAlertas() {
+      // Se for solicitante externo, não exibe
+      if (perfilUsuario && perfilUsuario.role === 'SOLICITANTE') return;
+
+      const busca = (document.getElementById('filtro-busca-alertas')?.value || '').trim().toLowerCase();
+      const sitFiltro = document.getElementById('filtro-classificacao-alertas')?.value || '';
+
+      const filtrados = materiais.filter(item => {
+        // Exibe prioritariamente Crítico, Em alerta ou Sob demanda
+        const eCriticoOuAlerta = item.classificacao === 'Crítico' || item.classificacao === 'Em alerta' || item.classificacao === 'Sob demanda';
+        if (!eCriticoOuAlerta) return false;
+
+        const matchesBusca = item.codigoAqua.toLowerCase().includes(busca) || item.descricao.toLowerCase().includes(busca) || item.poloNome.toLowerCase().includes(busca);
+        const matchesSit = !sitFiltro || item.classificacao === sitFiltro;
+
+        return matchesBusca && matchesSit;
+      });
+
+      const tbody = document.getElementById('tabela-alertas-body');
+      if (!tbody) return;
+
+      if (filtrados.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" class="p-8 text-center text-slate-400">Nenhum material em nível crítico ou alerta no momento.</td></tr>';
+      } else {
+        tbody.innerHTML = filtrados.slice(0, 150).map(item => {
+          const estilo = obterEstiloClassificacao(item.classificacao);
+          const faltaComprar = Math.max(0, item.estoqueMaximo - item.saldoAtual);
+
+          return `
+            <tr class="hover:bg-rose-50/40 transition text-xs sm:text-sm">
+              <td class="py-3 px-4 font-mono font-bold text-rose-800">${item.codigoAqua}</td>
+              <td class="py-3 px-4">
+                <span class="font-bold text-slate-900 block">${item.descricao}</span>
+                <span class="text-[11px] text-slate-400">Grupo: ${item.grupo}</span>
+              </td>
+              <td class="py-3 px-4 font-bold text-[#0070C0]">${item.poloNome}</td>
+              <td class="py-3 px-4 text-center font-semibold text-slate-500">${item.unidade}</td>
+              <td class="py-3 px-4 text-center font-extrabold text-sm ${item.saldoAtual === 0 ? 'text-rose-700' : 'text-slate-800'}">${item.saldoAtual}</td>
+              <td class="py-3 px-4 text-center font-bold font-mono text-rose-700">${item.estoqueMinimo}</td>
+              <td class="py-3 px-4 text-center font-bold text-slate-700">${item.estoqueMaximo}</td>
+              <td class="py-3 px-4 text-right">
+                <span class="font-extrabold text-rose-700 text-sm bg-rose-100 px-2.5 py-1 rounded-lg border border-rose-300">
+                  +${faltaComprar} ${item.unidade}
+                </span>
+              </td>
+              <td class="py-3 px-4 text-center">
+                <span class="px-2.5 py-1 text-xs rounded-full border ${estilo.badge} inline-flex items-center gap-1">
+                  <i data-lucide="${estilo.icone}" class="w-3 h-3"></i> ${item.classificacao}
+                </span>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      lucide.createIcons();
+    }
+
+    // =========================================================================
+    // 8. RENDERIZAÇÃO: MOVIMENTAÇÕES (AUDITORIA RLS)
+    // =========================================================================
+    function renderHistorico() {
+      const busca = (document.getElementById('filtro-busca-historico')?.value || '').trim().toLowerCase();
+
+      const filtrados = historico.filter(h => {
+        const codigo = h.materiais?.codigo_aqua || '';
+        const desc = h.materiais?.descricao || '';
+        const os = h.motivo_os || '';
+        const eq = h.equipe_destino || '';
+        return codigo.toLowerCase().includes(busca) || 
+               desc.toLowerCase().includes(busca) || 
+               os.toLowerCase().includes(busca) || 
+               eq.toLowerCase().includes(busca);
+      });
+
+      const tbody = document.getElementById('tabela-historico-body');
+      if (!tbody) return;
+
+      if (filtrados.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" class="py-8 text-center text-slate-400">Nenhum evento registrado no histórico.</td></tr>';
+      } else {
+        tbody.innerHTML = filtrados.map(h => {
+          const isSaida = h.tipo === 'SAÍDA';
+          const dataFmt = new Date(h.created_at).toLocaleString('pt-BR');
+
+          return `
+            <tr class="hover:bg-slate-50 transition text-xs">
+              <td class="py-3 px-4 font-mono font-bold text-[#002060]">${h.transacao_codigo}</td>
+              <td class="py-3 px-4 font-mono text-slate-500">${dataFmt}</td>
+              <td class="py-3 px-4 font-bold text-[#0070C0]">${h.polos?.nome || '-'}</td>
+              <td class="py-3 px-4">
+                <span class="px-2 py-0.5 rounded-full text-xs font-bold ${isSaida ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}">
+                  ${h.tipo}
+                </span>
+              </td>
+              <td class="py-3 px-4 font-mono font-bold text-slate-800">${h.materiais?.codigo_aqua || '-'}</td>
+              <td class="py-3 px-4 text-slate-700">
+                <span class="font-semibold block truncate max-w-xs">${h.materiais?.descricao || '-'}</span>
+              </td>
+              <td class="py-3 px-4 text-center font-bold text-[#002060]">${h.quantidade} ${h.materiais?.unidade || ''}</td>
+              <td class="py-3 px-4 text-center text-slate-600 font-mono">${h.saldo_anterior} &rarr; <strong class="text-slate-900">${h.saldo_atual}</strong></td>
+              <td class="py-3 px-4 text-slate-700">
+                <span class="font-bold">${h.solicitante_nome}</span>
+                <span class="text-slate-400 block">${h.equipe_destino || ''}</span>
+              </td>
+              <td class="py-3 px-4 text-slate-600">
+                <span class="text-slate-500 block truncate max-w-xs" title="${h.motivo_os}">${h.motivo_os}</span>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      lucide.createIcons();
+    }
+
+    // =========================================================================
+    // 9. DASHBOARD: MÉTRICAS GERAIS
+    // =========================================================================
+    function renderDashboard() {
+      const totalSkus = materiais.length;
+      const volumeTotal = materiais.reduce((acc, m) => acc + m.saldoAtual, 0);
+      const criticosOuAlerta = materiais.filter(m => m.classificacao === 'Crítico' || m.classificacao === 'Em alerta');
+
+      const elTotal = document.getElementById('stat-total-codigos');
+      const elVol = document.getElementById('stat-volume-total');
+      const elCarrinho = document.getElementById('stat-carrinho');
+      const elAlerta = document.getElementById('stat-zerados');
+      const badgeNav = document.getElementById('badge-alertas-nav');
+
+      if (elTotal) elTotal.innerText = totalSkus.toLocaleString('pt-BR');
+      if (elVol) elVol.innerText = volumeTotal.toLocaleString('pt-BR');
+      if (elCarrinho) elCarrinho.innerText = carrinhoItens.length;
+      if (elAlerta) elAlerta.innerText = criticosOuAlerta.length;
+
+      if (badgeNav) {
+        badgeNav.innerText = criticosOuAlerta.length;
+        badgeNav.classList.toggle('hidden', criticosOuAlerta.length === 0);
+      }
+
+      // Fila recente de movimentações
+      const fila = document.getElementById('dashboard-fila-atendimento');
+      if (fila) {
+        if (historico.length === 0) {
+          fila.innerHTML = `
+            <div class="h-44 flex flex-col items-center justify-center text-center p-6 text-slate-400">
+              <i data-lucide="check" class="w-8 h-8 text-[#0070C0] mb-2"></i>
+              <p class="font-bold text-[#002060] text-sm">Sem movimentações recentes</p>
+              <p class="text-xs text-slate-400">As retiradas confirmadas surgirão aqui em tempo real.</p>
+            </div>
+          `;
+        } else {
+          fila.innerHTML = historico.slice(0, 5).map(h => `
+            <div class="p-3 bg-slate-50 hover:bg-[#EAF2FB]/40 rounded-xl border border-slate-200 transition flex items-center justify-between gap-3">
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-[#EAF2FB] text-[#002060]">${h.transacao_codigo}</span>
+                  <span class="text-xs font-bold text-slate-800">${h.solicitante_nome}</span>
+                  <span class="text-[11px] text-[#0070C0] font-semibold">&bull; ${h.polos?.nome || ''}</span>
+                </div>
+                <p class="text-xs text-slate-600 truncate mt-0.5">${h.quantidade} ${h.materiais?.unidade || ''} - ${h.materiais?.descricao || ''}</p>
+              </div>
+              <span class="text-[10px] text-slate-400 font-mono shrink-0">${new Date(h.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+            </div>
+          `).join('');
+        }
+      }
+
+      lucide.createIcons();
+    }
+
+    // =========================================================================
+    // 10. FLUXO DE RETIRADA DIRETA (CHECKOUT E BAIXA ATÔMICA VIA SUPABASE RPC)
+    // =========================================================================
+    function adicionarAoCarrinhoPolo(estoqueId) {
+      const inp = document.getElementById(`input-qtd-${estoqueId}`);
+      const qtd = parseInt(inp?.value, 10) || 1;
+      adicionarAoCarrinhoGenerico(estoqueId, qtd);
+    }
+
+    function adicionarAoCarrinhoGeral(estoqueId) {
+      const inp = document.getElementById(`input-geral-${estoqueId}`);
+      const qtd = parseInt(inp?.value, 10) || 1;
+      adicionarAoCarrinhoGenerico(estoqueId, qtd);
+    }
+
+    function adicionarAoCarrinhoGenerico(estoqueId, quantidade) {
+      const item = materiais.find(m => m.estoqueId === estoqueId);
+      if (!item) return;
+
+      if (quantidade <= 0) {
+        showToast('Informe uma quantidade válida maior que zero.', 'error');
+        return;
+      }
+
+      const idx = carrinhoItens.findIndex(c => c.estoqueId === estoqueId);
+      const qtdJaNoCarrinho = idx >= 0 ? carrinhoItens[idx].quantidade : 0;
+      const novaQtd = qtdJaNoCarrinho + quantidade;
+
+      if (novaQtd > item.saldoAtual) {
+        showToast(`Saldo insuficiente no Polo ${item.poloNome}! Disponível: ${item.saldoAtual} ${item.unidade}.`, 'error');
+        return;
+      }
+
+      if (idx >= 0) {
+        carrinhoItens[idx].quantidade = novaQtd;
+      } else {
+        carrinhoItens.push({
+          estoqueId: item.estoqueId,
+          poloId: item.poloId,
+          poloNome: item.poloNome,
+          materialId: item.materialId,
+          codigoAqua: item.codigoAqua,
+          descricao: item.descricao,
+          unidade: item.unidade,
+          saldoAtual: item.saldoAtual,
+          quantidade: quantidade
+        });
+      }
+
+      atualizarContadoresCarrinho();
+      renderTabelaPolo();
+      renderTabelaEstoque();
+      showToast(`Adicionado à lista de retirada: ${item.descricao.substring(0, 30)}...`, 'success');
+    }
+
+    function atualizarContadoresCarrinho() {
+      const totalItens = carrinhoItens.length;
+      const bTopo = document.getElementById('badge-carrinho-topo');
+      const bDash = document.getElementById('stat-carrinho');
+      const bModal = document.getElementById('checkout-contador-itens');
+
+      if (bTopo) bTopo.innerText = totalItens;
+      if (bDash) bDash.innerText = totalItens;
+      if (bModal) bModal.innerText = totalItens;
+    }
+
+    function abrirModalCheckoutRetirada() {
+      if (carrinhoItens.length === 0) {
+        showToast('Sua lista de retirada está vazia. Adicione itens antes de retirar.', 'info');
+        return;
+      }
+
+      if (perfilUsuario) {
+        document.getElementById('checkout-nome-solicitante').value = perfilUsuario.nome;
+      }
+
+      renderListaCheckout();
+      openModal('modal-checkout-retirada');
+    }
+
+    function renderListaCheckout() {
+      const container = document.getElementById('checkout-lista-itens-container');
+      if (!container) return;
+
+      container.innerHTML = carrinhoItens.map((item, idx) => `
+        <div class="p-3 bg-white rounded-xl border border-slate-200 flex items-center justify-between gap-3 shadow-xs">
+          <div class="min-w-0 flex-1">
+            <p class="text-xs font-bold text-slate-800 truncate">${item.descricao}</p>
+            <p class="text-[10px] text-slate-500 font-mono">SKU: ${item.codigoAqua} &bull; Polo: ${item.poloNome} &bull; Saldo: ${item.saldoAtual} ${item.unidade}</p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <input type="number" min="1" max="${item.saldoAtual}" value="${item.quantidade}" onchange="ajustarQtdCheckout(${idx}, this.value)" class="w-16 px-2 py-1 text-xs font-bold border border-slate-300 rounded-lg text-center">
+            <span class="text-xs font-bold text-[#0070C0]">${item.unidade}</span>
+            <button type="button" onclick="removerItemCheckout(${idx})" class="p-1 rounded-lg text-rose-500 hover:bg-rose-50 transition" title="Remover item">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+      atualizarContadoresCarrinho();
+      lucide.createIcons();
+    }
+
+    function ajustarQtdCheckout(idx, valor) {
+      const qtd = parseInt(valor, 10) || 1;
+      const item = carrinhoItens[idx];
+      if (!item) return;
+
+      if (qtd > item.saldoAtual) {
+        showToast(`Quantidade excede o saldo físico (${item.saldoAtual} ${item.unidade})`, 'error');
+        item.quantidade = item.saldoAtual;
+      } else if (qtd <= 0) {
+        item.quantidade = 1;
+      } else {
+        item.quantidade = qtd;
+      }
+      renderListaCheckout();
+    }
+
+    function removerItemCheckout(idx) {
+      carrinhoItens.splice(idx, 1);
+      if (carrinhoItens.length === 0) {
+        closeModal('modal-checkout-retirada');
+      } else {
+        renderListaCheckout();
+      }
+      atualizarContadoresCarrinho();
+      renderTabelaPolo();
+      renderTabelaEstoque();
+    }
+
+    // Processamento da Retirada Direta chamando a RPC PostgreSQL
+    async function confirmarRetiradaDiretaCheckout(e) {
+      e.preventDefault();
+
+      if (carrinhoItens.length === 0) {
+        showToast('Lista de retirada vazia.', 'error');
+        return;
+      }
+
+      const nomeSolicitante = document.getElementById('checkout-nome-solicitante').value.trim();
+      const equipeDestino = document.getElementById('checkout-equipe-destino').value;
+      const osNumero = document.getElementById('checkout-os').value.trim();
+      const motivo = document.getElementById('checkout-motivo').value.trim();
+      const btnConfirmar = document.getElementById('btn-confirmar-retirada');
+
+      const motivoCompleto = osNumero ? `O.S. ${osNumero} - ${motivo}` : motivo;
+      const transacaoBase = `RET-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+      btnConfirmar.disabled = true;
+      btnConfirmar.innerText = 'Processando no Supabase...';
+
+      let processadosComSucesso = 0;
+      let errosOcorridos = [];
+
+      try {
+        for (let i = 0; i < carrinhoItens.length; i++) {
+          const item = carrinhoItens[i];
+          const transacaoCodigo = `${transacaoBase}-${i + 1}`;
+
+          // Executa a Stored Procedure atômica
+          const { data, error } = await supabaseClient.rpc('processar_retirada_material', {
+            p_polo_id: item.poloId,
+            p_material_id: item.materialId,
+            p_quantidade: item.quantidade,
+            p_transacao_codigo: transacaoCodigo,
+            p_solicitante_nome: nomeSolicitante,
+            p_equipe_destino: equipeDestino,
+            p_motivo_os: motivoCompleto
+          });
+
+          if (error) {
+            console.error(`Erro ao retirar material ${item.codigoAqua}:`, error);
+            errosOcorridos.push(`${item.codigoAqua}: ${error.message}`);
+          } else {
+            processadosComSucesso++;
+          }
+        }
+
+        if (processadosComSucesso > 0) {
+          showToast(`Retirada de ${processadosComSucesso} item(ns) confirmada com sucesso no Supabase!`, 'success');
+          carrinhoItens = [];
+          closeModal('modal-checkout-retirada');
+          await carregarDadosSupabase();
+        }
+
+        if (errosOcorridos.length > 0) {
+          showToast(`Atenção: Houve falha em ${errosOcorridos.length} item(ns): ${errosOcorridos.join('; ')}`, 'error');
+        }
+
+      } catch (err) {
+        console.error('Falha geral no checkout:', err);
+        showToast('Erro ao processar retirada no banco de dados.', 'error');
+      } finally {
+        btnConfirmar.disabled = false;
+        btnConfirmar.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> Confirmar Retirada Imediata';
+        lucide.createIcons();
+      }
+    }
+
+    // =========================================================================
+    // 11. EXPORTAÇÃO COMPLETA PARA EXCEL (.XLSX) - EXCLUSIVO ADMINISTRADOR
+    // =========================================================================
+    async function exportarDadosParaExcelAdmin() {
+      if (!perfilUsuario || perfilUsuario.role !== 'ADMIN') {
+        showToast('Acesso negado: Somente o administrador pode exportar dados do sistema.', 'error');
+        return;
+      }
+
+      showToast('Gerando arquivo Excel com dados do Supabase...', 'info');
+
+      try {
+        const wb = XLSX.utils.book_new();
+
+        // 1. Aba Base Consolidada de Materiais e Saldos
+        const dadosEstoque = materiais.map(m => ({
+          'Polo': m.poloNome,
+          'Código AQUA (SKU)': m.codigoAqua,
+          'Descrição Item': m.descricao,
+          'Unidade': m.unidade,
+          'Grupo': m.grupo,
+          'Necessário 1 Mês (v9)': m.previsao30d,
+          'Regra Mínimo': m.tipoRegraMinimo,
+          'Estoque Mínimo': m.estoqueMinimo,
+          'Estoque Máximo': m.estoqueMaximo,
+          'Estoque Inicial (Chegou)': m.saldoInicial,
+          'Estoque Físico Atual': m.saldoAtual,
+          'Classificação': m.classificacao
+        }));
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosEstoque), 'Base_Estoque_Polos');
+
+        // 2. Abas Individuais por Polo
+        POLOS_SISTEMA.forEach(poloNome => {
+          const dadosPolo = materiais.filter(m => m.poloNome === poloNome).map(m => ({
+            'Código SKU': m.codigoAqua,
+            'Descrição do Material': m.descricao,
+            'Unid.': m.unidade,
+            'Previsão 30d': m.previsao30d,
+            'Estoque Mínimo': m.estoqueMinimo,
+            'Estoque Máximo': m.estoqueMaximo,
+            'Chegou (Inicial)': m.saldoInicial,
+            'Saldo Atual': m.saldoAtual,
+            'Situação': m.classificacao
+          }));
+          XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosPolo), `Polo ${poloNome}`);
+        });
+
+        // 3. Aba de Movimentações
+        const dadosMov = historico.map(h => ({
+          'ID Transação': h.transacao_codigo,
+          'Data e Hora': new Date(h.created_at).toLocaleString('pt-BR'),
+          'Polo': h.polos?.nome || '-',
+          'Tipo de Ação': h.tipo,
+          'Código AQUA': h.materiais?.codigo_aqua || '-',
+          'Descrição': h.materiais?.descricao || '-',
+          'Quantidade': h.quantidade,
+          'Unidade': h.materiais?.unidade || '-',
+          'Estoque Anterior': h.saldo_anterior,
+          'Estoque Posterior': h.saldo_atual,
+          'Situação Resultante': h.situacao_resultante,
+          'Solicitante': h.solicitante_nome,
+          'Equipe': h.equipe_destino,
+          'Responsável Registro': h.responsavel_registro,
+          'Motivo / OS': h.motivo_os
+        }));
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosMov), 'Movimentacoes');
+
+        // 4. Download do arquivo
+        const dataHoje = new Date().toISOString().slice(0, 10);
+        XLSX.writeFile(wb, `SIGMA_Supabase_Export_${dataHoje}.xlsx`);
+        showToast('Exportação concluída com sucesso!', 'success');
+
+      } catch (err) {
+        console.error('Erro na exportação Excel:', err);
+        showToast('Erro ao exportar base de dados.', 'error');
+      }
+    }
+
+    // =========================================================================
+    // 12. UTILITÁRIOS DE TELA E NAVEGAÇÃO
+    // =========================================================================
+    function switchTab(tabId) {
+      if (perfilUsuario && perfilUsuario.role === 'SOLICITANTE' && tabId === 'alertas') {
+        showToast('Aba de Alertas restrita a administradores e validadores técnicos.', 'info');
+        return;
+      }
+
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-[#0070C0]', 'text-white', 'shadow-sm');
+        btn.classList.add('text-[#EAF2FB]');
+      });
+
+      const selectedTab = document.getElementById(`tab-${tabId}`);
+      const selectedBtn = document.getElementById(`nav-${tabId}`);
+      if (selectedTab) selectedTab.classList.remove('hidden');
+      if (selectedBtn) {
+        selectedBtn.classList.remove('text-[#EAF2FB]');
+        selectedBtn.classList.add('bg-[#0070C0]', 'text-white', 'shadow-sm');
+      }
+
+      if (tabId === 'polos') renderTabelaPolo();
+      if (tabId === 'estoque') renderTabelaEstoque();
+      if (tabId === 'alertas') renderTabelaAlertas();
+      if (tabId === 'historico') renderHistorico();
+      if (tabId === 'dashboard') renderDashboard();
+
+      lucide.createIcons();
+    }
+
+    function openModal(id) {
+      const m = document.getElementById(id);
+      if (m) {
+        m.classList.remove('hidden');
+        lucide.createIcons();
+      }
+    }
+
+    function closeModal(id) {
+      const m = document.getElementById(id);
+      if (m) m.classList.add('hidden');
+    }
+
+    function showToast(msg, tipo = 'info') {
+      const toast = document.getElementById('toast');
+      const msgEl = document.getElementById('toast-msg');
+      const icon = document.getElementById('toast-icon');
+      if (!toast || !msgEl || !icon) return;
+
+      msgEl.innerText = msg;
+
+      if (tipo === 'success') {
+        toast.className = 'fixed bottom-5 right-5 z-50 transform transition-all duration-300 flex items-center gap-3 px-4 py-3 rounded-2xl shadow-2xl text-sm font-medium border bg-emerald-600 border-emerald-500 text-white max-w-md';
+        icon.setAttribute('data-lucide', 'check-circle');
+      } else if (tipo === 'error') {
+        toast.className = 'fixed bottom-5 right-5 z-50 transform transition-all duration-300 flex items-center gap-3 px-4 py-3 rounded-2xl shadow-2xl text-sm font-medium border bg-rose-600 border-rose-500 text-white max-w-md';
+        icon.setAttribute('data-lucide', 'alert-circle');
+      } else {
+        toast.className = 'fixed bottom-5 right-5 z-50 transform transition-all duration-300 flex items-center gap-3 px-4 py-3 rounded-2xl shadow-2xl text-sm font-medium border bg-[#1C366B] border-[#00B0F0]/40 text-white max-w-md';
+        icon.setAttribute('data-lucide', 'info');
+      }
+
+      lucide.createIcons();
+      toast.classList.remove('translate-y-20', 'opacity-0');
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3500);
+    }
+  </script>
+</body>
+</html>
